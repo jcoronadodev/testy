@@ -2,14 +2,25 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { testCaseSchema } from "@/lib/validation";
 
-export async function GET() {
-  const items = await prisma.testCase.findMany({
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json(items);
+export async function GET(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const numericId = Number(id);
+  const item = await prisma.testCase.findUnique({ where: { id: numericId } });
+  if (!item) {
+    return new NextResponse(null, { status: 404 });
+  }
+  return NextResponse.json(item);
 }
 
-export async function POST(req: Request) {
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const numericId = Number(id);
   const json = await req.json();
   const parsed = testCaseSchema.safeParse(json);
   if (!parsed.success) {
@@ -20,7 +31,8 @@ export async function POST(req: Request) {
   }
 
   const data = parsed.data;
-  const created = await prisma.testCase.create({
+  const updated = await prisma.testCase.update({
+    where: { id: numericId },
     data: {
       externalId: data.externalId || null,
       title: data.title,
@@ -41,5 +53,16 @@ export async function POST(req: Request) {
     },
   });
 
-  return NextResponse.json(created, { status: 201 });
+  return NextResponse.json(updated);
 }
+
+export async function DELETE(
+  _req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const numericId = Number(id);
+  await prisma.testCase.delete({ where: { id: numericId } });
+  return new NextResponse(null, { status: 204 });
+}
+

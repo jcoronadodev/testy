@@ -6,11 +6,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import useSWR from "swr";
 import { testCaseSchema, type TestCaseInput } from "@/lib/validation";
 import { useForm, type Resolver, type SubmitHandler } from "react-hook-form";
+import type { TestCase } from "@prisma/client";
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 export default function TestCasesPage() {
-  const { data, mutate, isLoading } = useSWR("/api/test-cases", fetcher);
+  const { data, mutate, isLoading } = useSWR<TestCase[]>("/api/test-cases", fetcher);
   const [editing, setEditing] = useState<number | null>(null);
 
   const {
@@ -29,7 +30,7 @@ export default function TestCasesPage() {
 
   useEffect(() => {
     if (editing && data) {
-      const item = data.find((x: any) => x.id === editing);
+      const item = data.find((x) => x.id === editing);
       if (item) {
         reset({
           externalId: item.externalId ?? "",
@@ -53,7 +54,7 @@ export default function TestCasesPage() {
       reset({
         channel: "SCO",
         testDate: new Date(),
-      } as any);
+      } as Partial<TestCaseInput>);
     }
   }, [editing, data, reset]);
 
@@ -82,7 +83,7 @@ export default function TestCasesPage() {
     mutate();
   };
 
-  const rows = useMemo(() => (Array.isArray(data) ? data : []), [data]);
+  const rows = useMemo<TestCase[]>(() => (Array.isArray(data) ? data : []), [data]);
 
   return (
     <div className="mx-auto max-w-7xl p-6 space-y-8">
@@ -110,7 +111,7 @@ export default function TestCasesPage() {
             />
             {errors.externalId && (
               <p className="text-sm text-red-600">
-                {errors.externalId.message as any}
+                {errors.externalId.message as string}
               </p>
             )}
           </div>
@@ -290,7 +291,7 @@ export default function TestCasesPage() {
                 </td>
               </tr>
             )}
-            {rows.map((r: any) => (
+            {rows.map((r) => (
               <tr key={r.id} className="border-t">
                 <Td>{r.id}</Td>
                 <Td>{r.externalId || "—"}</Td>
