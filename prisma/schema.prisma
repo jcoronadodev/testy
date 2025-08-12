@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Channel {
+  SCO
+  POS
+}
+
+enum CardType {
+  CMR
+  VISA
+  MASTERCARD
+  DEBIT
+  OTHER
+}
+
+model TestCase {
+  id             Int       @id @default(autoincrement())
+  // External human-friendly ID you currently use (string to allow formats like TST-001)
+  externalId     String?
+  title          String    // "Caso de prueba"
+  scenario       String    // "Escenario"
+  testData       String    // "Datos de prueba"
+  terminal       String    // "Terminal"
+  testDate       DateTime  // "Fecha"
+  trx            String?   // "TRX"
+  receiptAmount  Decimal?  // "Monto boleta"
+  cmrPoints      Int?      // "Aporte CMR puntos"
+  cardType       CardType? // "Tipo Tarjeta"
+  cardTerminal   String?   // "Terminal tarjeta"
+  expectedResult String    // "Resultado esperado"
+  actualResult   String?   // "Resultado obtenido"
+  notes          String?   // "Observaciones"
+  channel        Channel   // SCO o POS
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
